@@ -27,13 +27,12 @@ private:
     SOCKET sClient[8];
 
 public:
-    Server(int port = DEFAULT_PORT, int MaxThreadNum = MAX_THREAD);
+    Server(int port, int MaxThreadNum);
     ~Server();
 
     void Listen();
     void Accept(SOCKET &sClient);
-    char *Receice();
-    
+    char *Receice(SOCKET &sClient);
 };
 
 Server::Server(int port = DEFAULT_PORT, int MaxThreadNum = MAX_THREAD)
