@@ -1,4 +1,5 @@
 #pragma once
+#ifdef I_OS_WIN
 #include <iostream>
 #include <WinSock2.h>
 #include <stdio.h>
@@ -46,3 +47,9 @@ Server::Server(int port = DEFAULT_PORT, int MaxThreadNum = MAX_THREAD)
     local.sin_addr.s_addr = htonl(INADDR_ANY);
     
 }
+
+#endif
+#ifdef I_OS_LINUX
+
+
+#endif

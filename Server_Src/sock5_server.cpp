@@ -1,5 +1,6 @@
+#include "osplatformutil.h"
 #include "sock5_server.h"
-
+#ifdef I_OS_WIN
 using namespace std;
 
 void Server::Listen()
@@ -33,3 +34,9 @@ char *Server::Receice(SOCKET &sClient)
     char *t = new char[10];
     return t;
 }
+#endif
+
+#ifdef I_OS_LINUX
+
+
+#endif

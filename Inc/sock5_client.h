@@ -1,8 +1,12 @@
-#include <WINSOCK2.H>
 #include <stdio.h>
 #include <iostream>
 #include <vector>
 #include <thread>
+#include "osplatformutil.h"
+
+#ifdef I_OS_WIN
+#include <WINSOCK2.H>
+#endif
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
