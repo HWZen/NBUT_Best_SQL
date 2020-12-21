@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
 
 void ReadOptions(int argc, char *argv[])
 {
-    port = 5150;
+    port = DEFAULT_PORT;
     serverAddress = "127.0.0.1";
     user = "";
     password = "";

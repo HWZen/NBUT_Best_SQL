@@ -34,7 +34,7 @@
 *.pdb
 *.ilk
 .vscode
-cmake-build-debug
+cmake-build-*
 .vs
 .idea
 temp*

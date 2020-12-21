@@ -10,7 +10,7 @@ using namespace std;
 
 //定义程序中使用的常量
 #define SERVER_ADDRESS "127.0.0.1" //服务器端IP地址
-#define PORT 5150                  //服务器的端口号
+#define DEFAULT_PORT 6800                  //服务器的端口号
 #define MSGSIZE 1024               //收发缓冲区的大小
 #pragma comment(lib, "ws2_32.lib")
 
@@ -33,7 +33,7 @@ private:
 
     /* data */
 public:
-    Client(const char server_address[] = SERVER_ADDRESS, int port = PORT, int msgsize = MSGSIZE);
+    Client(const char server_address[] = SERVER_ADDRESS, int port = DEFAULT_PORT, int msgsize = MSGSIZE);
     ~Client();
 
     // 连接至服务器
