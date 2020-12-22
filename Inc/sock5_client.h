@@ -1,11 +1,28 @@
 #include <stdio.h>
 #include <iostream>
 #include <vector>
-#include <thread>
 #include "osplatformutil.h"
 
 #ifdef I_OS_WIN
+
 #include <WINSOCK2.H>
+#pragma comment(lib, "ws2_32.lib")
+
+#endif
+
+#ifdef I_OS_LINUX
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+typedef int SOCKET;
+typedef struct sockaddr_in SOCKADDR_IN;
+#define closesocket(x) close(x)
+
 #endif
 
 #pragma clang diagnostic push
@@ -16,12 +33,14 @@ using namespace std;
 #define SERVER_ADDRESS "127.0.0.1" //服务器端IP地址
 #define DEFAULT_PORT 6800                  //服务器的端口号
 #define MSGSIZE 1024               //收发缓冲区的大小
-#pragma comment(lib, "ws2_32.lib")
 
 class Client
 {
 private:
+
+#ifdef I_OS_WIN
     WSADATA wsaData;
+#endif
     //连接所用套节字
     SOCKET sClient;
     //保存远程服务器的地址信息

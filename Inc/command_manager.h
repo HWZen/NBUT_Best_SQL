@@ -7,8 +7,8 @@ using namespace std;
 class Manager
 {
 private:
-    char user[16];
-    char password[32];
+    string user;
+    string psword;
 
 public:
     Manager(const char Usr[],const char password[]);
@@ -18,14 +18,7 @@ public:
 
 };
 
-Manager::Manager(const char Usr[],const char password[])
-{
-    
-}
 
-Manager::~Manager()
-{
-}
 
 
 

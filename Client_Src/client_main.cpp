@@ -1,7 +1,14 @@
+#include "osplatformutil.h"
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#ifdef I_OS_WIN
 #include <conio.h>
+#endif
+#ifdef I_OS_LINUX
+#include <string.h>
+#include <termio.h>
+#endif
 #include "sock5_client.h"
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
@@ -12,6 +19,10 @@ string user;
 string password;
 int port;
 string serverAddress;
+
+#ifdef I_OS_LINUX
+int getch(void);
+#endif
 
 // 读取处理程序参数
 void ReadOptions(int argc, char *argv[]);
@@ -37,13 +48,16 @@ int main(int argc, char *argv[])
 
     // 发送用户名、密码
     cl1.sendSTR(user.c_str(),user.length());
-    cout << cl1.receive() << endl;
+    cl1.receive();
     cl1.sendSTR(password.c_str(), password.length());
-    cout << cl1.receive() << endl;
+    cl1.receive();
+
+#ifdef I_OS_WIN
     cin.getline(str, MSGSIZE);
+#endif
 
 
-    while(TRUE)
+    while(1)
     {
         printf("%s~SQL:",user.c_str());
         //从键盘输入指令
@@ -54,9 +68,12 @@ int main(int argc, char *argv[])
 
         // 接收返回结果并输出
         char *t=cl1.receive();
-        cout << t << endl;
-    }
 
+        cout << t << endl;
+
+        if (strcmp(t, "bye.") == 0 || strcmp(t, "lose connect")==0)
+            break;
+    }
     return 0;
 }
 
@@ -122,7 +139,7 @@ void ReadOptions(int argc, char *argv[])
         {
             if(i!=0)
             {
-                cout << "unknow command: " << argv[i];
+                cout << "unknow command: " << argv[i] << endl;
                 Help();
                 exit(0);
             }
@@ -166,7 +183,6 @@ void userConfig()
     }
     password[count] = '\0';
     cout<<endl;
-    cout<<password<<endl;
 }
 
 void Help()
@@ -177,5 +193,32 @@ void Help()
          << "-pw --password: password" << endl
          << "-a --address: address" << endl;
 }
+
+#ifdef I_OS_LINUX
+
+int getch(void)
+{
+    struct termios tm, tm_old;
+    int fd = 0, ch;
+
+    if (tcgetattr(fd, &tm) < 0) {//保存现在的终端设置
+        return -1;
+    }
+
+    tm_old = tm;
+    cfmakeraw(&tm);//更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
+    if (tcsetattr(fd, TCSANOW, &tm) < 0) {//设置上更改之后的设置
+        return -1;
+    }
+
+    ch = getchar();
+    if (tcsetattr(fd, TCSANOW, &tm_old) < 0) {//更改设置为最初的样子
+        return -1;
+    }
+
+    return ch;
+}
+
+#endif
 
 #pragma clang diagnostic pop

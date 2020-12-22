@@ -1,12 +1,16 @@
 #include "sock5_client.h"
+#include "string.h"
 
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 
 Client::Client(const char server_address[], int port, int msgsize)
 {
+
+#ifdef I_OS_WIN
     // Initialize Windows socket library
     WSAStartup(0x0202, &wsaData);
+#endif
 
     // 创建客户端套节字
     sClient = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); //AF_INET指明使用TCP/IP协议族；
@@ -24,12 +28,20 @@ Client::~Client()
 {
     // 解除连接
     closesocket(sClient);
+
+#ifdef I_OS_WIN
     WSACleanup();
+#endif
+
 }
 
 void Client::connect2server()
 {
-    connect(sClient, (struct sockaddr *)&server, sizeof(SOCKADDR_IN));
+    if(connect(sClient, (struct sockaddr *)&server, sizeof(SOCKADDR_IN))<0)
+    {
+        cerr << "connect fail"<<endl;
+        exit(1);
+    }
 }
 
 void Client::sendSTR(const char str[],int len)
@@ -41,6 +53,11 @@ char *Client::receive()
 {
     int ret;
     ret = recv(sClient, szMessage, MSGSIZE, 0);
+    if(ret==-1)
+    {
+        strncpy(szMessage, "lose connect", 13);
+        ret = 13;
+    }
     szMessage[ret] = '\0';
     //RecVector.push_back(szMessage);
     return szMessage;
