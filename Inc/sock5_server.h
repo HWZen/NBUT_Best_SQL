@@ -1,9 +1,12 @@
-#pragma once
+#ifndef SOCK5_SERVER
+#define SOCK5_SERVER
+#include "osplatformutil.h"
 #ifdef I_OS_WIN
 #include <iostream>
 #include <WinSock2.h>
 #include <stdio.h>
 #include <thread>
+#include <vector>
 
 #include <string>
 using namespace std;
@@ -19,37 +22,33 @@ private:
     WSADATA wsaData;
     SOCKET sListen;
     SOCKADDR_IN local;
-    char szMessage[MSGSIZE];
     int port;
     int threadNum;
 
     thread *acceptThr[MAX_THREAD];
     thread *recThr[MAX_THREAD];
-    SOCKET sClient[8];
+
+    vector<SOCKET> sClient_vec;
+    SOCKET sClient[MAX_THREAD];
+    bool Thr_connected[MAX_THREAD] = {false};
+    int next_Thr();
 
 public:
-    Server(int port, int MaxThreadNum);
+    Server(int Port = DEFAULT_PORT);
     ~Server();
 
     void Listen();
-    void Accept(SOCKET &sClient);
-    char *Receice(SOCKET &sClient);
+    
+    [[noreturn]] void Accept();
+    void Receice(SOCKET sClient, SOCKADDR_IN Cli_Info);
+    void Send(SOCKET &sClient, const char *str);
 };
 
-Server::Server(int port = DEFAULT_PORT, int MaxThreadNum = MAX_THREAD)
-{
-    WSAStartup(0x0202, &wsaData);
-
-    sListen = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-
-    local.sin_family = AF_INET;
-    local.sin_port = htons(DEFAULT_PORT);
-    local.sin_addr.s_addr = htonl(INADDR_ANY);
-    
-}
 
 #endif
 #ifdef I_OS_LINUX
 
+
+#endif
 
 #endif
