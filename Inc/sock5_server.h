@@ -1,25 +1,48 @@
 #ifndef SOCK5_SERVER
 #define SOCK5_SERVER
 #include "osplatformutil.h"
-#ifdef I_OS_WIN
 #include <iostream>
-#include <WinSock2.h>
 #include <stdio.h>
 #include <thread>
 #include <vector>
-
 #include <string>
 using namespace std;
-#pragma comment(lib, "ws2_32.lib")
 
 #define DEFAULT_PORT 5150
 #define MSGSIZE 1024
 #define MAX_THREAD 8
 
+#ifdef I_OS_WIN
+
+#include <WinSock2.h>
+#pragma comment(lib, "ws2_32.lib")
+
+#endif
+
+#ifdef I_OS_LINUX
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/shm.h>
+typedef int SOCKET;
+typedef struct sockaddr_in SOCKADDR_IN;
+#define closesocket(x) close(x)
+
+#define TRUE 1
+
+#endif
+
 class Server
 {
 private:
+#ifdef I_OS_WIN
     WSADATA wsaData;
+#endif
+
     SOCKET sListen;
     SOCKADDR_IN local;
     int port;
@@ -38,17 +61,10 @@ public:
     ~Server();
 
     void Listen();
-    
+
     [[noreturn]] void Accept();
     void Receice(SOCKET sClient, SOCKADDR_IN Cli_Info);
     void Send(SOCKET &sClient, const char *str);
 };
-
-
-#endif
-#ifdef I_OS_LINUX
-
-
-#endif
 
 #endif

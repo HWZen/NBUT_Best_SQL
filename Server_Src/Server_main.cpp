@@ -1,16 +1,16 @@
 #include "osplatformutil.h"
 #include "sock5_server.h"
+#include <iostream>
+#include <string.h>
+using namespace std;
 
-#ifdef I_OS_WIN
-
-
-int main(int argc,char *argv[])
+int main(int argc, char *argv[])
 {
-    
+
     cout << "NBUT Best SQL is running." << endl;
-    if(argc==2)
+    if (argc == 2)
     {
-        if(strcmp(argv[1],"-p")==0 || strcmp(argv[1],"--port")==0)
+        if (strcmp(argv[1], "-p") == 0 || strcmp(argv[1], "--port") == 0)
         {
             Server server(atoi(argv[2]));
             server.Listen();
@@ -29,7 +29,3 @@ int main(int argc,char *argv[])
 
     return 0;
 }
-
-
-
-#endif

@@ -23,6 +23,8 @@ typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
 #define closesocket(x) close(x)
 
+#define TRUE 1
+
 #endif
 
 #pragma clang diagnostic push
@@ -31,13 +33,12 @@ using namespace std;
 
 //定义程序中使用的常量
 #define SERVER_ADDRESS "127.0.0.1" //服务器端IP地址
-#define DEFAULT_PORT 6800                  //服务器的端口号
+#define DEFAULT_PORT 6800          //服务器的端口号
 #define MSGSIZE 1024               //收发缓冲区的大小
 
 class Client
 {
 private:
-
 #ifdef I_OS_WIN
     WSADATA wsaData;
 #endif
@@ -51,7 +52,7 @@ private:
 
     char szMessage[MSGSIZE];
     //成功接收字节的个数
-    
+
     int port;
 
     /* data */
@@ -65,7 +66,6 @@ public:
     void sendSTR(const char str[], int len);
     // 接收消息（阻塞式）
     char *receive();
-
 };
 
 #pragma clang diagnostic pop
