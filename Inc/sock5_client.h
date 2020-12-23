@@ -1,11 +1,11 @@
 #include <stdio.h>
 #include <iostream>
-#include <vector>
 #include "osplatformutil.h"
 
 #ifdef I_OS_WIN
 
 #include <WINSOCK2.H>
+#include <ws2tcpip.h>
 #pragma comment(lib, "ws2_32.lib")
 
 #endif
@@ -14,6 +14,7 @@
 
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <netdb.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
