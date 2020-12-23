@@ -63,7 +63,8 @@ void Server::Listen()
 #endif
 
 #ifdef I_OS_LINUX
-        Client = accept(sListen, (struct sockaddr *)&client, NULL);
+        socklen_t length = sizeof(client);
+        Client = accept(sListen, (struct sockaddr *)&client, &length);
 #endif
 
         printf("Accepted client:%s:%d\n", inet_ntoa(client.sin_addr),
