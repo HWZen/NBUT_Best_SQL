@@ -66,6 +66,8 @@ int main(int argc, char *argv[])
         cin.getline(str, MSGSIZE); //The function reads characters from stdin and loads them into szMessage
 
         // 发送指令
+        if(strlen(str) == 0)
+            continue;
         cl1.sendSTR(str, strlen(str));
 
         // 接收返回结果并输出

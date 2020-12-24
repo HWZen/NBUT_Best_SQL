@@ -115,7 +115,8 @@ void Client::connect2server()
 
 void Client::sendSTR(const char str[],int len)
 {
-    send(sClient, str, len, 0);
+    if(len > 0)
+        send(sClient, str, len, 0);
 }
 
 char *Client::receive()
