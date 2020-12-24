@@ -1,12 +1,16 @@
 #include "osplatformutil.h"
 #include "sock5_server.h"
 #include <iostream>
-#include <string.h>
+#include <cstring>
 using namespace std;
+
+char *PATH;
+
+void getPath(const char *argv);
 
 int main(int argc, char *argv[])
 {
-
+    PATH = argv[0];
     cout << "NBUT Best SQL is running." << endl;
     if (argc == 2)
     {
@@ -29,3 +33,21 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+void getPath(const char *argv)
+{
+    PATH = new char[256];
+    memcpy(PATH, argv, sizeof(argv));
+
+    for (int i = sizeof(PATH); i > 0; i--)
+    {
+        if(PATH[i-1]=='\\')
+        {
+            PATH[i] = '\0';
+            break;
+        }
+    }
+}
+
+
+

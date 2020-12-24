@@ -17,6 +17,9 @@ string Manager::command(const char com[])
 {
     if (strcmp(com, "exit") == 0)
         return string("bye.");
+    else if(strcmp(com,"server_stop")==0)
+        exit(0);
     else
         return string("received");
+    
 }
