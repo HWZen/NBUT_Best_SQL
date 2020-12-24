@@ -43,7 +43,9 @@ int main(int argc, char *argv[])
     Client cl1(serverAddress.c_str(), port);
 
     // 连接服务器
+    cout << "connecting to " << cl1.IP_Addr() << ":" << port << " ..." << endl;
     cl1.connect2server();
+    cout << "connection sucessful." << endl;
     cout << cl1.receive() << endl;
 
     // 发送用户名、密码
@@ -164,9 +166,11 @@ void userConfig()
             {
                 continue;
             }
+#ifdef I_OS_WIN
             putchar('\b'); // 回退一格
             putchar(' ');  // 输出一个空格将原来的*隐藏
             putchar('\b'); // 再回退一格等待输入
+#endif
             count--;
             password.pop_back();
         }
@@ -176,7 +180,9 @@ void userConfig()
         }
         if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
         {                 // 密码只可包含数字和字母
+#ifdef I_OS_WIN
             putchar('*'); // 接收到一个字符后, 打印一个*
+#endif
             password += c;
             count++;
         }

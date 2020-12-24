@@ -45,22 +45,25 @@ private:
 #endif
     //连接所用套节字
     SOCKET sClient;
+
     //保存远程服务器的地址信息
     SOCKADDR_IN server;
+
     //收发缓冲区
-
-    //vector<char[MSGSIZE]> RecVector;
-
     char szMessage[MSGSIZE];
-    //成功接收字节的个数
 
     int port;
+
+    // 服务器真实地址
+    string Real_Addr;
 
     /* data */
 public:
     Client(const char server_address[] = SERVER_ADDRESS, int port = DEFAULT_PORT, int msgsize = MSGSIZE);
     ~Client();
 
+    // 服务器IP地址
+    string IP_Addr();
     // 连接至服务器
     void connect2server();
     // 发送字符串

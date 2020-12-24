@@ -9,7 +9,7 @@ using namespace std;
 Client::Client(const char server_address[], int port, int msgsize)
 {
 
-    string addr_str = server_address;
+    Real_Addr = server_address;
 #ifdef I_OS_WIN
     // Initialize Windows socket library
     WSAStartup(0x0202, &wsaData);
@@ -44,7 +44,7 @@ Client::Client(const char server_address[], int port, int msgsize)
             //inet_ntop的返回值为NULL，则表示失败，否则返回相应的IP地址（此时szIpRet指向的是szIpBuff）
             const char *szIpRet = inet_ntop(pHostEntry->h_addrtype, *pptr, szIpBuff, sizeof(szIpBuff));
             if(szIpRet!=NULL)
-                addr_str = szIpBuff;
+                Real_Addr = szIpBuff;
         }
         
     }
@@ -71,7 +71,7 @@ Client::Client(const char server_address[], int port, int msgsize)
     case AF_INET:
     case AF_INET6:
         pptr = hptr->h_addr_list;
-        addr_str = inet_ntop(hptr->h_addrtype, hptr->h_addr, str, sizeof(str));
+        Real_Addr = inet_ntop(hptr->h_addrtype, hptr->h_addr, str, sizeof(str));
         break;
     default:
         printf(" unknown address type\n ");
@@ -88,7 +88,7 @@ Client::Client(const char server_address[], int port, int msgsize)
     memset(&server, 0, sizeof(SOCKADDR_IN));            //先将保存地址的server置为全0
     server.sin_family = PF_INET;                        //声明地址格式是TCP/IP地址格式
     server.sin_port = htons(port);                      //指明连接服务器的端口号，htons()用于 converts values between the host and network byte order
-    server.sin_addr.s_addr = inet_addr(addr_str.c_str());       //指明连接服务器的IP地址
+    server.sin_addr.s_addr = inet_addr(Real_Addr.c_str());       //指明连接服务器的IP地址
                                                         //结构SOCKADDR_IN的sin_addr字段用于保存IP地址，sin_addr字段也是一个结构体，sin_addr.s_addr用于最终保存IP地址
                                                         //inet_addr()用于将 形如的"127.0.0.1"字符串转换为IP地址格式
 }
@@ -131,6 +131,11 @@ char *Client::receive()
     //RecVector.push_back(szMessage);
     return szMessage;
 
+}
+
+string Client::IP_Addr()
+{
+    return Real_Addr;
 }
 
 #pragma clang diagnostic pop
