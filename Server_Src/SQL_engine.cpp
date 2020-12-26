@@ -1,138 +1,190 @@
 #include "SQL_engine.h"
 #include "osplatformutil.h"
+#include "function.h"
 #include <cstring>
 
 #ifdef I_OS_WIN
 #include <direct.h>
 #include <io.h>
 #define CreatDir(x) mkdir(x)
+const char Slash = '\\';
 #endif
 
 #ifdef I_OS_LINUX
+
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+
 #define CreatDir(x) mkdir(x, S_IRWXU)
+const char Slash = '/';
+
 #endif
+
 
 using namespace std;
 
-Engine::Engine(const char *use_name, string &return_buf)
+Engine::Engine(const char *use_name, string &re_buf)
 {
-    return_buf.clear();
+    re_buf.clear();
     path = PATH;
+
+    // 打开表
     space_fptr = fopen("SQL.space", "rb");
-    if (feof(space_fptr))
+    if (space_fptr == NULL)
     {
         //error: load SQL.space fail
-        return_buf += NO_SPACE_FILE;
+        re_buf += NO_SPACE_FILE;
         DB_name[0] = 0;
         return;
     }
     else
     {
+        // 读取工作区配置文件，检测错误
         char space_path[PATH_SIZE];
         fread(space_path, sizeof(space_path), 1, space_fptr);
 
-        if(strcmp(space_path,path.c_str())!=0)
+        if (strcmp(space_path, path.c_str()) != 0)
             //waring: space may has been moved.
-            return_buf += SPACE_PATH_WARN;
+            re_buf += SPACE_PATH_WARN;
 
         char space_version[VERSION_SIZE];
         fread(space_version, sizeof(space_version), 1, space_fptr);
 
-        if(strcmp(space_version,ENGINE_VERSION)!= 0)
+        if (strcmp(space_version, ENGINE_VERSION) != 0)
             //waring: space engine version is different from now
-            return_buf += SPACE_VERSION_WARN;
+            re_buf += SPACE_VERSION_WARN;
 
         fread(&space_Header, sizeof(SQL_SPACE), 1, space_fptr);
-
-        for (int i = 0; i < space_Header.DB_NUm;i++)
-        {
-            if(strcmp(space_Header.DB[i],use_name)==0)
-            {
-                DB_name = use_name;
-                fclose(space_fptr);
-                return;
-            }
-        }
-        //error: can't find DB
-        return_buf += NO_DB_NAME;
         fclose(space_fptr);
+        re_buf += use(use_name);
         return;
     }
 }
 
 string Engine::use(const char *name)
 {
-    string return_buf = "";
-    if(space_Header.PATH[0]=0)
+    string re_buf = "";
+
+    // 检查数据库是否存在
+    if (space_Header.PATH[0] = 0)
     {
-        return_buf += "e 0";
-        return return_buf;
+        re_buf += NO_SPACE_FILE;
+        return re_buf;
     }
-    return return_buf;
+
+    for (int i = 0; i <= space_Header.DB_Num; i++)
+    {
+        if (i == space_Header.DB_Num)
+            return NO_DB_NAME;
+        if (!strcmp(space_Header.DB[i], name))
+            break;
+    }
+    // 检查完毕
+
+    // 数据库绝对路径
+    string Abs_Path = path;
+
+    if (Abs_Path[Abs_Path.length() - 1] != Slash)
+        Abs_Path += Slash;
+    Abs_Path += name;
+
+    // 打开数据库配置文件
+    FILE *DB_fp = fopen(string(Abs_Path + Slash + "DB.space").c_str(), "rb");
+    if (DB_fp == NULL)
+        return NO_DB_SPECIFIED;
+
+    DB_name = name;
+
+    // 检查配置文件
+    char space_path[PATH_SIZE];
+    fread(space_path, sizeof(space_path), 1, DB_fp);
+    if (strcmp(space_path, (path + Slash + name).c_str()) != 0)
+        //waring: space may has been moved.
+        re_buf += SPACE_PATH_WARN;
+
+    char space_version[VERSION_SIZE];
+    fread(space_version, sizeof(space_version), 1, DB_fp);
+    if (strcmp(space_version, ENGINE_VERSION) != 0)
+        //waring: space engine version is different from now
+        re_buf += SPACE_VERSION_WARN;
+
+    fread(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
+
+    fclose(DB_fp);
+
+    return re_buf;
 }
 
 string Engine::CreatSpace()
 {
-    string return_buf = "";
+    // 初始化工作区
+    // 慎用：不会检测工作区是否已存在
+    string re_buf = "";
 
-    if(space_fptr!=NULL)
+    if (space_fptr != NULL)
         fclose(space_fptr);
 
     space_fptr = fopen("SQL.space", "wb+");
-    if(space_fptr=NULL)
+    if (space_fptr == NULL)
     {
-        return_buf += FILE_CREATE_FAIL;
-        return return_buf;
+        re_buf += FILE_CREATE_FAIL;
+        return re_buf;
     }
 
     fwrite(PATH, sizeof(char[PATH_SIZE]), 1, space_fptr);
-    fwrite(ENGINE_VERSION, sizeof(ENGINE_VERSION), 1, space_fptr);
+    fwrite((const char *) ENGINE_VERSION, sizeof((const char *) ENGINE_VERSION), 1, space_fptr);
 
     memcpy(space_Header.PATH, PATH, sizeof(char[PATH_SIZE]));
-    space_Header.DB_NUm = 0;
+    space_Header.DB_Num = 0;
     fwrite(&space_Header, sizeof(SQL_SPACE), 1, space_fptr);
 
     fclose(space_fptr);
 
-    return return_buf;
+    return re_buf;
 }
 
 string Engine::CreatDB(const char *name, const char *group, const char *owner)
 {
-    string return_buf = "";
+    string re_buf = "";
 
     // 数据库绝对路径
     string Abs_Path = path;
-    if(Abs_Path[Abs_Path.length()-1]!='\\')
-        Abs_Path += '\\';
+
+    if (Abs_Path[Abs_Path.length() - 1] != Slash)
+        Abs_Path += Slash;
     Abs_Path += name;
     // 生成完毕
 
     // 检查并创建数据库
-    if(access(Abs_Path.c_str(),0)==-1)
+
+    // 检测数据库是否存在
+    for (int i = 0; i < space_Header.DB_Num; i++)
     {
-        if(!CreatDir(Abs_Path.c_str()))
+        if (!strcmp(name, space_Header.DB[i]))
+            return TARGET_EXIST;
+    }
+    if (access(Abs_Path.c_str(), 0) != 0)
+    {
+        if (CreatDir(Abs_Path.c_str()) != 0)
         {
-            return_buf += FILE_CREATE_FAIL;
-            return return_buf;
-        }       
+            re_buf += FILE_CREATE_FAIL;
+            return re_buf;
+        }
     }
     else
     {
-        return_buf += FILE_CREATE_FAIL;
-        return return_buf;
+        re_buf += FILE_CREATE_FAIL;
+        return re_buf;
     }
     // 创建完毕
 
     // 创建数据库配置文件
-    FILE *DB_fp = fopen((Abs_Path + "\\DB.space").c_str(), "wb+");
-    if(DB_fp==NULL)
+    FILE *DB_fp = fopen((Abs_Path + Slash + "DB.space").c_str(), "wb+");
+    if (DB_fp == NULL)
     {
-        return_buf += "e 2";
-        return return_buf;
+        re_buf += FILE_CREATE_FAIL;
+        return re_buf;
     }
 
     fwrite(Abs_Path.c_str(), sizeof(char[PATH_SIZE]), 1, DB_fp);
@@ -144,18 +196,167 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
     DB_Header.Index_Num = 0;
     DB_Header.Table_Num = 0;
     fwrite(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
+    fclose(DB_fp);
     // 创建完毕
 
 
     // 更新工作区配置文件
     space_fptr = fopen("SQL.space", "rb+");
-    if(space_fptr==NULL)
+    if (space_fptr == NULL)
     {
-        return_buf += NO_SPACE_FILE;
-        return return_buf;
+        re_buf += NO_SPACE_FILE;
+        return re_buf;
     }
     fseek(space_fptr, sizeof(char[PATH_SIZE]) + sizeof(char[VERSION_SIZE]), SEEK_SET);
-    memcpy(space_Header.DB[++space_Header.DB_NUm], name, 32);
+    memcpy(space_Header.DB[space_Header.DB_Num++], name, 32);
+    fwrite(&space_Header, sizeof(SQL_SPACE), 1, space_fptr);
+    fclose(space_fptr);
     // 更新完毕
-    return return_buf;
+    return re_buf;
+}
+
+string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], const SQL::DataType_Enum *Col_type)
+{
+    string re_buf = "";
+
+    // 检测数据库
+    if (DB_name[0] == 0)
+        return NO_DB_SPECIFIED;
+
+    // 检测表是否存在
+    for (int i = 0; i < DB_Header.Table_Num; i++)
+    {
+        if (!strcmp(name, DB_Header.Table[i]))
+            return TARGET_EXIST;
+    }
+    // 检测完毕
+
+    // 数据库绝对路径
+    string Abs_Path = path;
+    if (Abs_Path[Abs_Path.length() - 1] != Slash)
+        Abs_Path += Slash;
+    Abs_Path += DB_name + Slash + name;
+
+    // 创建表文件头
+    FILE *Tab_fptr = fopen(Abs_Path.c_str(), "wb+");
+    if (Tab_fptr == NULL)
+        return FILE_CREATE_FAIL;
+
+    // 打开数据库配置文件头
+    FILE *DB_fp = fopen((DB_name + Slash + "DB.space").c_str(), "rb+");
+    if (DB_fp == NULL)
+        return NO_DB_SPECIFIED;
+
+    // 开始创建表
+    fwrite(Abs_Path.c_str(), sizeof(char[PATH_SIZE]), 1, Tab_fptr);
+    fwrite(ENGINE_VERSION, sizeof(char[VERSION_SIZE]), 1, Tab_fptr);
+
+    Tab_SPACE Header;
+    strcpy(Header.PATH, Abs_Path.c_str());
+    Header.Col_num = Col_Num;
+    memcpy(Header.Col, Col, Col_Num * sizeof(char[32]));
+    memcpy(Header.Col_type, Col_type, Col_Num * sizeof(SQL::DataType_Enum));
+    Header.page_size = 0;
+    for (int i = 0; i < Col_Num; i++)
+    {
+        switch (Header.Col_type[i])
+        {
+            case SQL::Int:
+                Header.page_size += sizeof(int);
+                break;
+            case SQL::CHAR:
+                Header.page_size += CHAR_SIZE;
+                break;
+            case SQL::LONG_CHAR:
+                Header.page_size += LONG_CHAR_SIZE;
+                break;
+            case SQL::FLOAT:
+                Header.page_size += sizeof(double);
+            default:
+                break;
+        }
+    }
+
+    fwrite(&Header, sizeof(Header), 1, Tab_fptr);
+    fclose(Tab_fptr);
+    // 表创建完毕
+
+    // 更新数据库配置文件
+    fseek(DB_fp, sizeof(char[PATH_SIZE]) + sizeof(char[VERSION_SIZE]), SEEK_SET);
+    memcpy(DB_Header.Table[DB_Header.Table_Num++], name, sizeof(char[32]));
+    fwrite(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
+    fclose(DB_fp);
+    // 更行完毕
+
+    return re_buf;
+}
+
+string Engine::insertRol(const char *Tab_name, void **argv)
+{
+    string re_buf;
+    // 检测数据库
+    if (DB_name[0] == 0)
+        return NO_DB_SPECIFIED;
+
+    // 检测表是否存在
+    for (int i = 0; i <= DB_Header.Table_Num; i++)
+    {
+        if (i == DB_Header.Table_Num)
+            return NO_TARGET;
+        if (!strcmp(Tab_name, DB_Header.Table[i]))
+            break;
+    }
+    // 检测完毕
+
+    // 数据库绝对路径
+    string Abs_Path = path;
+    if (Abs_Path[Abs_Path.length() - 1] != Slash)
+        Abs_Path += Slash;
+    Abs_Path += DB_name + Slash + Tab_name;
+
+    // 打开表文件
+    FILE *Tab_fptr = fopen(Abs_Path.c_str(), "rb+");
+    if (Tab_fptr == NULL)
+        return FILE_CREATE_FAIL;
+
+    // 检查配置
+    char space_path[PATH_SIZE];
+    fread(space_path, sizeof(space_path), 1, Tab_fptr);
+    if (!strcmp(space_path, (path + Slash + DB_name + Slash + Tab_name).c_str()))
+        //waring: space may has been moved.
+        re_buf += SPACE_PATH_WARN;
+
+    char space_version[VERSION_SIZE];
+    fread(space_version, sizeof(space_version), 1, Tab_fptr);
+    if (strcmp(space_version, ENGINE_VERSION) != 0)
+        //waring: space engine version is different from now
+        re_buf += SPACE_VERSION_WARN;
+
+    Tab_SPACE tab_header;
+    fread(&tab_header, sizeof(Tab_SPACE), 1, Tab_fptr);
+
+    // 定位插入位置
+    if (tab_header.Rol_void_buf[0] != 0)
+    {
+        /*
+            从删除的空隙插入
+        */
+    }
+    else
+        fseek(Tab_fptr, 0, SEEK_END);
+
+    if (DB_Header.Index[0])
+    {
+        /*
+            如果有索引
+        */
+    }
+    fwrite(argv, tab_header.page_size, 1, Tab_fptr);
+
+    tab_header.Rol_num++;
+    fwrite(&tab_header, sizeof(Tab_SPACE), 1, Tab_fptr);
+
+    fclose(Tab_fptr);
+
+    return re_buf;
 }

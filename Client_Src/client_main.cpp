@@ -52,7 +52,7 @@ int main(int argc, char *argv[])
     cl1.sendSTR(user.c_str(),user.length());
     cl1.receive();
     cl1.sendSTR(password.c_str(), password.length());
-    cl1.receive();
+    cout << cl1.receive();
 
 #ifdef I_OS_WIN
     cin.getline(str, MSGSIZE);
@@ -61,7 +61,6 @@ int main(int argc, char *argv[])
 
     while(1)
     {
-        printf("%s~SQL:",user.c_str());
         //从键盘输入指令
         cin.getline(str, MSGSIZE); //The function reads characters from stdin and loads them into szMessage
 
@@ -73,7 +72,7 @@ int main(int argc, char *argv[])
         // 接收返回结果并输出
         char *t=cl1.receive();
 
-        cout << t << endl;
+        cout << t;
 
         if (strcmp(t, "bye.") == 0 || strcmp(t, "lose connect")==0)
             break;

@@ -5,6 +5,7 @@
 #include <string.h>
 
 using namespace std;
+using namespace SQL;
 
 Server::Server(int Port)
 {
@@ -94,13 +95,14 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
     if (ret >= 32)
         ret = 31;
     password[ret] = '\0';
-    Send(sClient, "Received_Password");
 
-    Manager manager(user, password);
+    string rec_buf;
+    Manager manager(user, password, rec_buf);
 
+    Send(sClient, rec_buf.c_str());
     /*
     判断账号密码正确
-
+    
 
     */
     ret = recv(sClient, szMessage, MSGSIZE, 0);

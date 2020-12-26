@@ -26,7 +26,7 @@ void String2argv_argc(char *str, int &argc, char **argv)
             }
         }
 
-        if(argc>=8)
+        if(argc>=16)
             break;
     }
 }
