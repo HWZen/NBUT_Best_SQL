@@ -2,6 +2,7 @@
 #include "function.h"
 #include <stdio.h>
 #include <string.h>
+#include <iostream>
 using namespace std;
 using namespace SQL;
 
@@ -39,8 +40,47 @@ Manager::Manager(const char *Usr, const char *password, string &buf)
     {
         mode = Create;
         buf = "no space file,maybe you need to create one. \nDo you want to init space? [Y/N]\n";
+        return;
     }
-        
+    if(rec_buf.find("e") != rec_buf.npos)
+    {
+        buf = "sql init error.\n";
+        buf += rec_buf;
+        return;
+    }
+
+    rec_buf = eng->use("mysql");
+    if(rec_buf.find("e") != rec_buf.npos)
+    {
+        buf = "can't found mysql data\n";
+        buf += rec_buf;
+        return;
+    }
+
+    void **databuf;
+    databuf =new void*[3];
+    rec_buf = eng->serach("user", "name", Usr, databuf);
+    if (rec_buf.find("e") != rec_buf.npos)
+    {
+        buf = "can't found user data: ";
+        buf += Usr;
+        buf += "\n";
+        buf += rec_buf;
+        return;
+    }
+    if(databuf!=NULL)
+    {
+        if(!strcmp((char *)databuf[2],password))
+        {
+            mode = SQL::Normal;
+            buf = "Login as ";
+            buf += Usr;
+            buf += "\n";
+            buf += Usr;
+            buf += "~SQL:";
+            return;
+        }
+    }
 }
 
 Manager::~Manager()
@@ -115,14 +155,20 @@ string Manager::CreateSpace(int parameterNum, char **parmeter)
                 return "Use database error. \n" + rec;
 
 
-        char Col[3][32] = {"id", "name","Group"};
+        char Col[3][CHAR_SIZE] = {"id", "name","Group"};
         SQL::DataType_Enum type_list[3] = {SQL::Int, SQL::CHAR, SQL::CHAR};
         rec = eng->CreatTable("user", 3, Col, type_list);
         if (rec.length() != 0)
             if (rec.find("e") != rec.npos)
                 return "Creat table error. \n" + rec;
-
-        rec = eng->insertRol("user", (void **)parmeter);
+        void *buf[3];
+        buf[0] = new int;
+        *(int *)buf[0] = 0;
+        buf[1] = new char[CHAR_SIZE];
+        memcpy(buf[1], parmeter[0], CHAR_SIZE);
+        buf[2] = new char[CHAR_SIZE];
+        memcpy(buf[2], parmeter[1], CHAR_SIZE);
+        rec = eng->insertRol("user", (const void **)buf);
         if (rec.length() != 0)
             if (rec.find("e") != rec.npos)
                 return "Insert data error. \n" + rec;

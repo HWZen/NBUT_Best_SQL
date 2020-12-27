@@ -2,6 +2,7 @@
 #include "osplatformutil.h"
 #include "function.h"
 #include <cstring>
+#include <iostream>
 
 #ifdef I_OS_WIN
 #include <direct.h>
@@ -20,7 +21,6 @@ const char Slash = '\\';
 const char Slash = '/';
 
 #endif
-
 
 using namespace std;
 
@@ -73,13 +73,8 @@ string Engine::use(const char *name)
         return re_buf;
     }
 
-    for (int i = 0; i <= space_Header.DB_Num; i++)
-    {
-        if (i == space_Header.DB_Num)
-            return NO_DB_NAME;
-        if (!strcmp(space_Header.DB[i], name))
-            break;
-    }
+    if(!findDB(name))
+        return NO_DB_NAME;
     // 检查完毕
 
     // 数据库绝对路径
@@ -133,7 +128,7 @@ string Engine::CreatSpace()
     }
 
     fwrite(PATH, sizeof(char[PATH_SIZE]), 1, space_fptr);
-    fwrite((const char *) ENGINE_VERSION, sizeof((const char *) ENGINE_VERSION), 1, space_fptr);
+    fwrite((const char *)ENGINE_VERSION, sizeof((const char *)ENGINE_VERSION), 1, space_fptr);
 
     memcpy(space_Header.PATH, PATH, sizeof(char[PATH_SIZE]));
     space_Header.DB_Num = 0;
@@ -159,11 +154,8 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
     // 检查并创建数据库
 
     // 检测数据库是否存在
-    for (int i = 0; i < space_Header.DB_Num; i++)
-    {
-        if (!strcmp(name, space_Header.DB[i]))
-            return TARGET_EXIST;
-    }
+    if(findDB(name))
+        return TARGET_EXIST;
     if (access(Abs_Path.c_str(), 0) != 0)
     {
         if (CreatDir(Abs_Path.c_str()) != 0)
@@ -191,14 +183,13 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
     fwrite(ENGINE_VERSION, sizeof(char[VERSION_SIZE]), 1, DB_fp);
 
     memcpy(DB_Header.PATH, Abs_Path.c_str(), sizeof(char[PATH_SIZE]));
-    memcpy(DB_Header.Group, group, sizeof(char[32]));
-    memcpy(DB_Header.Owner, owner, sizeof(char[32]));
+    memcpy(DB_Header.Group, group, sizeof(char[CHAR_SIZE]));
+    memcpy(DB_Header.Owner, owner, sizeof(char[CHAR_SIZE]));
     DB_Header.Index_Num = 0;
     DB_Header.Table_Num = 0;
     fwrite(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
     fclose(DB_fp);
     // 创建完毕
-
 
     // 更新工作区配置文件
     space_fptr = fopen("SQL.space", "rb+");
@@ -208,14 +199,14 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
         return re_buf;
     }
     fseek(space_fptr, sizeof(char[PATH_SIZE]) + sizeof(char[VERSION_SIZE]), SEEK_SET);
-    memcpy(space_Header.DB[space_Header.DB_Num++], name, 32);
+    memcpy(space_Header.DB[space_Header.DB_Num++], name, CHAR_SIZE);
     fwrite(&space_Header, sizeof(SQL_SPACE), 1, space_fptr);
     fclose(space_fptr);
     // 更新完毕
     return re_buf;
 }
 
-string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], const SQL::DataType_Enum *Col_type)
+string Engine::CreatTable(const char *name, int Col_Num, const char Col[][CHAR_SIZE], const SQL::DataType_Enum *Col_type)
 {
     string re_buf = "";
 
@@ -224,11 +215,8 @@ string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], c
         return NO_DB_SPECIFIED;
 
     // 检测表是否存在
-    for (int i = 0; i < DB_Header.Table_Num; i++)
-    {
-        if (!strcmp(name, DB_Header.Table[i]))
-            return TARGET_EXIST;
-    }
+    if(findTab(name))
+        return TARGET_EXIST;
     // 检测完毕
 
     // 数据库绝对路径
@@ -254,26 +242,26 @@ string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], c
     Tab_SPACE Header;
     strcpy(Header.PATH, Abs_Path.c_str());
     Header.Col_num = Col_Num;
-    memcpy(Header.Col, Col, Col_Num * sizeof(char[32]));
+    memcpy(Header.Col, Col, Col_Num * sizeof(char[CHAR_SIZE]));
     memcpy(Header.Col_type, Col_type, Col_Num * sizeof(SQL::DataType_Enum));
     Header.page_size = 0;
     for (int i = 0; i < Col_Num; i++)
     {
         switch (Header.Col_type[i])
         {
-            case SQL::Int:
-                Header.page_size += sizeof(int);
-                break;
-            case SQL::CHAR:
-                Header.page_size += CHAR_SIZE;
-                break;
-            case SQL::LONG_CHAR:
-                Header.page_size += LONG_CHAR_SIZE;
-                break;
-            case SQL::FLOAT:
-                Header.page_size += sizeof(double);
-            default:
-                break;
+        case SQL::Int:
+            Header.page_size += sizeof(int);
+            break;
+        case SQL::CHAR:
+            Header.page_size += CHAR_SIZE;
+            break;
+        case SQL::LONG_CHAR:
+            Header.page_size += LONG_CHAR_SIZE;
+            break;
+        case SQL::FLOAT:
+            Header.page_size += sizeof(double);
+        default:
+            break;
         }
     }
 
@@ -283,7 +271,7 @@ string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], c
 
     // 更新数据库配置文件
     fseek(DB_fp, sizeof(char[PATH_SIZE]) + sizeof(char[VERSION_SIZE]), SEEK_SET);
-    memcpy(DB_Header.Table[DB_Header.Table_Num++], name, sizeof(char[32]));
+    memcpy(DB_Header.Table[DB_Header.Table_Num++], name, sizeof(char[CHAR_SIZE]));
     fwrite(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
     fclose(DB_fp);
     // 更行完毕
@@ -291,7 +279,7 @@ string Engine::CreatTable(const char *name, int Col_Num, const char Col[][32], c
     return re_buf;
 }
 
-string Engine::insertRol(const char *Tab_name, void **argv)
+string Engine::insertRol(const char *Tab_name, const void **argv)
 {
     string re_buf;
     // 检测数据库
@@ -299,13 +287,8 @@ string Engine::insertRol(const char *Tab_name, void **argv)
         return NO_DB_SPECIFIED;
 
     // 检测表是否存在
-    for (int i = 0; i <= DB_Header.Table_Num; i++)
-    {
-        if (i == DB_Header.Table_Num)
-            return NO_TARGET;
-        if (!strcmp(Tab_name, DB_Header.Table[i]))
-            break;
-    }
+    if(!findTab(Tab_name))
+        return NO_TARGET;
     // 检测完毕
 
     // 数据库绝对路径
@@ -343,7 +326,7 @@ string Engine::insertRol(const char *Tab_name, void **argv)
         */
     }
     else
-        fseek(Tab_fptr, 0, SEEK_END);
+        fseek(Tab_fptr, PATH_SIZE + VERSION_SIZE + sizeof(Tab_SPACE) + tab_header.page_size * tab_header.Rol_num, SEEK_SET);
 
     if (DB_Header.Index[0])
     {
@@ -354,9 +337,127 @@ string Engine::insertRol(const char *Tab_name, void **argv)
     fwrite(argv, tab_header.page_size, 1, Tab_fptr);
 
     tab_header.Rol_num++;
+    fseek(Tab_fptr,PATH_SIZE+VERSION_SIZE,SEEK_SET);
     fwrite(&tab_header, sizeof(Tab_SPACE), 1, Tab_fptr);
 
     fclose(Tab_fptr);
 
     return re_buf;
+}
+
+bool Engine::findDB(const char *name)
+{
+    if (space_Header.PATH[1] == 0)
+        return false;
+    for (int i = 0; i < space_Header.DB_Num; i++)
+        if (!strcmp(space_Header.DB[i], name))
+            return true;
+    return false;
+}
+
+bool Engine::findTab(const char *name)
+{
+    if(DB_Header.PATH[1]==0)
+        return false;
+    for (int i = 0; i < DB_Header.Table_Num;i++)
+        if(!strcmp(DB_Header.Table[i],name))
+            return true;
+    return false;
+}
+
+string Engine::Get_Tab_Header(const char *name, Tab_SPACE &buf)
+{
+    if (!findTab(name))
+        return NO_TARGET;
+
+    FILE *Tab_fp = fopen((path + Slash + DB_name + Slash + name).c_str(), "rb");
+    if(Tab_fp==NULL)
+        return FILE_OPEN_FAIL;
+
+    fseek(Tab_fp, PATH_SIZE + VERSION_SIZE, SEEK_SET);
+    fread(&buf, sizeof(Tab_SPACE), 1, Tab_fp);
+    fclose(Tab_fp);
+
+    return "";
+}
+
+void Engine::Init_void_ptr(const Tab_SPACE &tab, void **buf)
+{
+    for (int i = 0; i < tab.Col_num;i++)
+    {
+        switch (tab.Col_type[i])
+        {
+        case SQL::Int:
+            buf[i] = new int;
+            break;
+        case SQL::CHAR:
+            buf[i] = new char[CHAR_SIZE];
+            break;
+        case SQL::LONG_CHAR:
+            buf[i] = new char[LONG_CHAR_SIZE];
+            break;
+        case SQL::FLOAT:
+            buf[i] = new double;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
+string Engine::serach(const char *Tab_name, const char *Col_name, const void *target, void **buf)
+{
+    Tab_SPACE Tab_headler;
+    string re_buf = Get_Tab_Header(Tab_name, Tab_headler);
+    if(re_buf.find("e")!=re_buf.npos)
+        return re_buf;
+
+    int Col_Addr = -1;
+    for (int i = 0; i < Tab_headler.Col_num;i++)
+    {
+        if(!strcmp(Tab_headler.Col[i],Col_name))
+        {
+            Col_Addr = i;
+            break;
+        }
+    }
+    if(Col_Addr==-1)
+        return NO_TARGET;
+
+    if (DB_Header.Index[0])
+    {
+        /*
+        使用索引查找
+        */
+    }
+
+    FILE *Tab_fp = fopen((path + Slash + DB_name + Slash + Tab_name).c_str(), "rb");
+    if (Tab_fp == NULL)
+        return FILE_OPEN_FAIL;
+    fseek(Tab_fp, PATH_SIZE + VERSION_SIZE + sizeof(Tab_SPACE), SEEK_SET);
+    bool has_void = false;
+    if(Tab_headler.Rol_void_buf[0]!=0)
+        has_void = true;
+    for (int i = 0; i < Tab_headler.Rol_num; i++)
+    {
+        fread(buf, Tab_headler.page_size, 1, Tab_fp);
+        switch (Tab_headler.Col_type[Col_Addr])
+        {
+        case SQL::Int:
+            if(*(int *)buf[Col_Addr]==*(int *)target)
+                return "";
+        case SQL::CHAR:
+        case SQL::LONG_CHAR:
+            if(!strcmp((char *)buf[Col_Addr],(char *)target))
+                return "";
+            break;
+        case SQL::FLOAT:
+            if(*(double *)buf[Col_Addr] == *(double *)target)
+                return "";
+        default:
+            break;
+        }
+    }
+    buf = NULL;
+    return NO_TARGET;
 }
