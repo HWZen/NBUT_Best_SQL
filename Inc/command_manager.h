@@ -2,7 +2,6 @@
 #define _MANAGER_
 #include "SQL_engine.h"
 #include <string>
-#include <map>
 using namespace std;
 using namespace SQL;
 
@@ -12,7 +11,7 @@ private:
     string user;
     string psword;
     Engine *eng;
-    SQL::Mode mode = SQL::Init;
+    SQL::Mode mode = SQL::NoLogin;
 
 public:
     Manager(const char *Usr, const char *password, string &buf);
@@ -21,6 +20,10 @@ public:
     string command(const char com[]);
 
     string CreateSpace(int parameterNum, char **parmeter);
+    string NormalCom(int argc, char **argv);
+    string CreatCom(int argc, char **argv);
+    string insertCom(int argc, char **argv);
+    string selectCom(int argc, char **argv);
 };
 
 

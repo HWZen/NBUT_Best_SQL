@@ -74,7 +74,7 @@ int main(int argc, char *argv[])
 
         cout << t;
 
-        if (strcmp(t, "bye.") == 0 || strcmp(t, "lose connect")==0)
+        if (strcmp(t, "bye.\n") == 0 || strcmp(t, "lose connect")==0)
             break;
     }
     return 0;

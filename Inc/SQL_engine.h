@@ -61,8 +61,9 @@ namespace SQL
 
     enum Mode
     {
-        Init,
+        NoLogin,
         Normal,
+        Init,
         Create
     };
 } // namespace SQL
@@ -126,17 +127,15 @@ public:
 
     string CreatDB(const char *name, const char *group, const char *owner);
 
-    string CreatTable(const char *name, int Col_Num, const char Col[][CHAR_SIZE], const SQL::DataType_Enum *Col_type);
+    string CreatTable(const char *name, int Col_Num, const char **Col, const SQL::DataType_Enum *Col_type);
 
     string use(const char *name);
 
-    string insertRol(const char *Tab_name, const void **argv);
+    string insertRol(const char *Tab_name, const void *argv);
 
     string Get_Tab_Header(const char *name, Tab_SPACE &buf);
 
-    string serach(const char *Tab_name, const char *Col_name, const void *target, void **buf);
-
-    
+    string serach(const char *Tab_name, const char *Col_name, const void *target, void *buf);
 
 };
 
