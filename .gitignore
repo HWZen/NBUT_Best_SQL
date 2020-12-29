@@ -39,3 +39,6 @@ cmake-build-*
 .idea
 temp*
 
+*.pdf
+*.sql
+

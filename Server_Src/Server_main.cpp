@@ -12,13 +12,16 @@ using namespace std;
 
 char *PATH;
 
+// 获取路径函数
 void getPath(const char *argv);
 
 int main(int argc, char *argv[])
 {
+    // 获取路径（将文件名删掉）
     getPath(argv[0]);
     cout << "Path: " << PATH << endl;
     cout << "NBUT Best SQL is running." << endl;
+    // 处理参数
     if (argc ==3)
     {
         if (strcmp(argv[1], "-p") == 0 || strcmp(argv[1], "--port") == 0)
@@ -34,7 +37,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        cout << "no parameter or inviable parameter." << endl;
+        // 开始监听
         Server server;
         server.Listen();
     }
@@ -60,15 +63,6 @@ void getPath(const char *argv)
             break;
         }
     }
-
-//#ifdef I_OS_LINUX
-//    if(!realpath("server",PATH))
-//    {
-//        cerr<<"can't load path"<<endl;
-//        exit(0);
-//    }
-//
-//#endif
 
 }
 

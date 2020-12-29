@@ -8,6 +8,7 @@
 using namespace std;
 using namespace SQL;
 
+// 指令转枚举map
 typedef map<string, Command_Enum> com2enum;
 com2enum c2e =
         {
@@ -39,6 +40,7 @@ com2enum c2e =
                 {"table",    table}
         };
 
+// 数据类型转枚举map
 typedef map<string, DataType_Enum> data2enum;
 data2enum d2e =
         {
@@ -140,7 +142,7 @@ string Manager::command(const char com[])
         case SQL::NoLogin:
             break;
         case SQL::Init:
-            return CreateSpace(parameterNum, parameter);
+            return InitSpace(parameterNum, parameter);
             break;
 
         default:
@@ -151,7 +153,7 @@ string Manager::command(const char com[])
     return string("received");
 }
 
-string Manager::CreateSpace(int parameterNum, char **parmeter)
+string Manager::InitSpace(int parameterNum, char **parmeter)
 {
     string re_buf;
     if (parameterNum == 1 && (!strcmp(parmeter[0], "N") || !strcmp(parmeter[0], "n")))
@@ -163,7 +165,7 @@ string Manager::CreateSpace(int parameterNum, char **parmeter)
     if (parameterNum == 2)
     {
         string rec;
-        rec = eng->CreatSpace();
+        rec = eng->InitSpace();
         if (rec.length() != 0)
             if (rec.find("e") != rec.npos)
                 return "Creat Space Index file error. \n" + rec;
@@ -425,7 +427,6 @@ string Manager::selectCom(int argc, char **argv)
                     break;
                 case FLOAT:
                     re_data += to_string(*(double *)((char *)p + dataptr));
-                    cout << to_string(*(double *)((char *)p + dataptr)) << endl;
                     dataptr += sizeof(double);
                 default:
                     break;

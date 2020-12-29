@@ -97,7 +97,7 @@ void ReadOptions(int argc, char *argv[])
             {
                 cout << "Missing parameters: user" << endl;
                 Help();
-                exit(0);
+                exit(1);
             }
         }
         else if (strcmp(argv[i], "-p") == 0 || strcmp(argv[i], "--port") == 0)
@@ -108,7 +108,7 @@ void ReadOptions(int argc, char *argv[])
             {
                 cout << "Missing parameters: port" << endl;
                 Help();
-                exit(0);
+                exit(1);
             }
         }
         else if (strcmp(argv[i], "-pw") == 0 || strcmp(argv[i], "--password") == 0)
@@ -119,7 +119,7 @@ void ReadOptions(int argc, char *argv[])
             {
                 cout << "Missing parameters: password" << endl;
                 Help();
-                exit(0);
+                exit(1);
             }
         }
         else if (strcmp(argv[i], "-a") == 0 || strcmp(argv[i], "--address") == 0)
@@ -130,13 +130,13 @@ void ReadOptions(int argc, char *argv[])
             {
                 cout << "Missing parameters: address" << endl;
                 Help();
-                exit(0);
+                exit(1);
             }
         }
         else if(strcmp(argv[i],"--help")==0 || strcmp(argv[i],"-h")==0)
         {
             Help();
-            exit(0);
+            exit(1);
         }
         else
         {
@@ -144,7 +144,7 @@ void ReadOptions(int argc, char *argv[])
             {
                 cout << "unknow command: " << argv[i] << endl;
                 Help();
-                exit(0);
+                exit(1);
             }
         }
     }

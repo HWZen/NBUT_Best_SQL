@@ -111,7 +111,7 @@ string Engine::use(const char *name)
     return re_buf;
 }
 
-string Engine::CreatSpace()
+string Engine::InitSpace()
 {
     // 初始化工作区
     // 慎用：不会检测工作区是否已存在
@@ -383,29 +383,6 @@ string Engine::Get_Tab_Header(const char *name, Tab_SPACE &buf)
     return "";
 }
 
-void Engine::Init_void_ptr(const Tab_SPACE &tab, void **buf)
-{
-    for (int i = 0; i < tab.Col_num; i++)
-    {
-        switch (tab.Col_type[i])
-        {
-            case SQL::Int:
-                buf[i] = new int;
-                break;
-            case SQL::CHAR:
-                buf[i] = new char[CHAR_SIZE];
-                break;
-            case SQL::LONG_CHAR:
-                buf[i] = new char[LONG_CHAR_SIZE];
-                break;
-            case SQL::FLOAT:
-                buf[i] = new double;
-                break;
-            default:
-                break;
-        }
-    }
-}
 
 string Engine::serach(const char *Tab_name, const char *Col_name, const void *target, void *buf)
 {

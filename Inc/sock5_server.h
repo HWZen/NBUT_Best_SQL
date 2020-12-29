@@ -10,8 +10,8 @@ using namespace std;
 
 #define DEFAULT_PORT 5150
 #define MSGSIZE 1024
-#define MAX_THREAD 8
 
+// Windows库
 #ifdef I_OS_WIN
 
 #include <WinSock2.h>
@@ -19,6 +19,7 @@ using namespace std;
 
 #endif
 
+// Linux库
 #ifdef I_OS_LINUX
 
 #include <sys/types.h>
@@ -43,27 +44,27 @@ private:
     WSADATA wsaData;
 #endif
 
+    // 监听SOCKET
     SOCKET sListen;
+    // 记录本机地址信息
     SOCKADDR_IN local;
+    // 记录端口
     int port;
-    int threadNum;
-
-    thread *acceptThr[MAX_THREAD];
-    thread *recThr[MAX_THREAD];
-
-    vector<SOCKET> sClient_vec;
-    SOCKET sClient[MAX_THREAD];
-    bool Thr_connected[MAX_THREAD] = {false};
-    int next_Thr();
 
 public:
     Server(int Port = DEFAULT_PORT);
     ~Server();
 
+    // 开启监听函数
     void Listen();
 
+    // 受理连接并开多线程接收函数
     [[noreturn]] void Accept();
+
+    // 接收函数，并连接管理系统
     void Receice(SOCKET sClient, SOCKADDR_IN Cli_Info);
+
+    // 发送函数
     void Send(SOCKET &sClient, const char *str);
 };
 
