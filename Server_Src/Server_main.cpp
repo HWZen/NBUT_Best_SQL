@@ -12,16 +12,16 @@ using namespace std;
 
 char *PATH;
 
-// è·å–è·¯å¾„å‡½æ•°
+// »ñÈ¡Â·¾¶º¯Êı
 void getPath(const char *argv);
 
 int main(int argc, char *argv[])
 {
-    // è·å–è·¯å¾„ï¼ˆå°†æ–‡ä»¶ååˆ æ‰ï¼‰
+    // »ñÈ¡Â·¾¶£¨½«ÎÄ¼şÃûÉ¾µô£©
     getPath(argv[0]);
     cout << "Path: " << PATH << endl;
     cout << "NBUT Best SQL is running." << endl;
-    // å¤„ç†å‚æ•°
+    // ´¦Àí²ÎÊı
     if (argc ==3)
     {
         if (strcmp(argv[1], "-p") == 0 || strcmp(argv[1], "--port") == 0)
@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
     }
     else
     {
-        // å¼€å§‹ç›‘å¬
+        // ¿ªÊ¼¼àÌı
         Server server;
         server.Listen();
     }

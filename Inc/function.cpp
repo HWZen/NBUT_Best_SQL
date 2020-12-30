@@ -8,7 +8,7 @@ void String2argv_argc(char *str, int &argc, char **argv)
     {
         if(str[i]==' ')
             str[i] = '\0';    
-        else if(str[i] >= 0x21&&str[i]<=0x7e)
+        else
         {
             if(i!=0)
             {

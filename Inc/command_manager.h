@@ -8,37 +8,37 @@ using namespace SQL;
 class Manager
 {
 private:
-    // userå’Œpassword(passwordè¦AES-256åŠ å¯†)
+    // userºÍpassword(passwordÒªAES-256¼ÓÃÜ)
     string user;
     string psword;
 
-    // æœåŠ¡å™¨å¼•æ“æŒ‡é’ˆ
+    // ·şÎñÆ÷ÒıÇæÖ¸Õë
     Engine *eng;
 
-    // å½“å‰è¿æ¥çŠ¶æ€
+    // µ±Ç°Á¬½Ó×´Ì¬
     SQL::Mode mode = SQL::NoLogin;
 
 public:
-    // æ„é€ 
+    // ¹¹Ôì
     Manager(const char *Usr, const char *password, string &buf);
     ~Manager();
     
-    // æŒ‡ä»¤å¤„ç†å…¥å£
+    // Ö¸Áî´¦ÀíÈë¿Ú
     string command(const char com[]);
 
-    // åˆå§‹åŒ–ç©ºé—´æŒ‡ä»¤
+    // ³õÊ¼»¯¿Õ¼äÖ¸Áî
     string InitSpace(int parameterNum, char **parmeter);
     
-    // æ™®é€šæŒ‡ä»¤
+    // ÆÕÍ¨Ö¸Áî
     string NormalCom(int argc, char **argv);
 
-    // åˆ›å»ºæŒ‡ä»¤ï¼ˆæ–°å»ºæ•°æ®åº“ã€å»ºè¡¨ï¼‰
+    // ´´½¨Ö¸Áî£¨ĞÂ½¨Êı¾İ¿â¡¢½¨±í£©
     string CreatCom(int argc, char **argv);
 
-    // æ’å…¥æŒ‡ä»¤
+    // ²åÈëÖ¸Áî
     string insertCom(int argc, char **argv);
 
-    // selectæŒ‡ä»¤å‡½æ•°
+    // selectÖ¸Áîº¯Êı
     string selectCom(int argc, char **argv);
 };
 

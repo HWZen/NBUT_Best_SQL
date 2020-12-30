@@ -11,7 +11,7 @@ using namespace std;
 #define DEFAULT_PORT 5150
 #define MSGSIZE 1024
 
-// Windowsåº“
+// Windows¿â
 #ifdef I_OS_WIN
 
 #include <WinSock2.h>
@@ -19,7 +19,7 @@ using namespace std;
 
 #endif
 
-// Linuxåº“
+// Linux¿â
 #ifdef I_OS_LINUX
 
 #include <sys/types.h>
@@ -44,27 +44,27 @@ private:
     WSADATA wsaData;
 #endif
 
-    // ç›‘å¬SOCKET
+    // ¼àÌıSOCKET
     SOCKET sListen;
-    // è®°å½•æœ¬æœºåœ°å€ä¿¡æ¯
+    // ¼ÇÂ¼±¾»úµØÖ·ĞÅÏ¢
     SOCKADDR_IN local;
-    // è®°å½•ç«¯å£
+    // ¼ÇÂ¼¶Ë¿Ú
     int port;
 
 public:
     Server(int Port = DEFAULT_PORT);
     ~Server();
 
-    // å¼€å¯ç›‘å¬å‡½æ•°
+    // ¿ªÆô¼àÌıº¯Êı
     void Listen();
 
-    // å—ç†è¿æ¥å¹¶å¼€å¤šçº¿ç¨‹æ¥æ”¶å‡½æ•°
+    // ÊÜÀíÁ¬½Ó²¢¿ª¶àÏß³Ì½ÓÊÕº¯Êı
     [[noreturn]] void Accept();
 
-    // æ¥æ”¶å‡½æ•°ï¼Œå¹¶è¿æ¥ç®¡ç†ç³»ç»Ÿ
+    // ½ÓÊÕº¯Êı£¬²¢Á¬½Ó¹ÜÀíÏµÍ³
     void Receice(SOCKET sClient, SOCKADDR_IN Cli_Info);
 
-    // å‘é€å‡½æ•°
+    // ·¢ËÍº¯Êı
     void Send(SOCKET &sClient, const char *str);
 };
 
