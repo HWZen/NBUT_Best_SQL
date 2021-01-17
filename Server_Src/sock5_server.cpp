@@ -108,14 +108,13 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
 /**  开始接收账户密码信息  **/
     // 接收消息函数（C库提供）
     Send(sClient, "User: ");
-    Sleep(300);
+    Sleep(100);
     Send(sClient, "over");
     ret = recv(sClient, user, MSGSIZE, 0);
     if (ret >= 16)
         ret = 15;
     user[ret] = '\0';
     Send(sClient, "Password: ");
-    Sleep(300);
     Send(sClient, "pw mode");
 
     ret = recv(sClient, password, MSGSIZE, 0);
@@ -132,6 +131,7 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
 
     // 发送消息给客户端
     Send(sClient, result.c_str());
+    Send(sClient, "over");
 
     // 接收消息
     ret = recv(sClient, szMessage, MSGSIZE, 0);
@@ -146,7 +146,7 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
 
         // 暂时的做法，以后重构的时候再详补通信逻辑。
         Send(sClient, "over");
-        if (result == "bye.")
+        if (result == "bye.\n")
             break;
         // 接收消息
         ret = recv(sClient, szMessage, MSGSIZE, 0);
