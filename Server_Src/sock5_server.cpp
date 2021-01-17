@@ -4,6 +4,25 @@
 #include <string>
 #include <string.h>
 
+#ifdef I_OS_WIN
+
+#include <windows.h>
+
+#endif
+
+#ifdef I_OS_LINUX
+
+#include <time.h>
+void Sleep(int ms)
+{
+    struct timeval delay;
+    delay.tv_sec = 0;
+    delay.tv_usec = ms * 1000; // 20 ms
+    select(0, NULL, NULL, NULL, &delay);
+}
+
+#endif
+
 using namespace std;
 using namespace SQL;
 
@@ -24,7 +43,7 @@ Server::Server(int Port)
 // 监听初始化
 void Server::Listen()
 {
-    if (bind(sListen, (struct sockaddr *)&local, sizeof(SOCKADDR_IN)) == -1)
+    if (bind(sListen, (struct sockaddr *) &local, sizeof(SOCKADDR_IN)) == -1)
     {
         cerr << "bind fail: port " << port << endl;
         exit(0);
@@ -58,12 +77,12 @@ void Server::Listen()
 
 #ifdef I_OS_LINUX
         socklen_t length = sizeof(client);
-        Client = accept(sListen, (struct sockaddr *)&client, &length);
+        Client = accept(sListen, (struct sockaddr *) &client, &length);
 #endif
         // 接受成功后：
         printf("Accepted client:%s:%d\n", inet_ntoa(client.sin_addr),
                ntohs(client.sin_port));
-        Send(Client, "SQL Connected");
+        Send(Client, "SQL Connected\n");
         // 新建线程，在新线程中进行后续的接发通信操作
         RecThr = new thread(&Server::Receice, this, Client, client);
         RecThr->detach();
@@ -88,11 +107,15 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
 /**************************/
 /**  开始接收账户密码信息  **/
     // 接收消息函数（C库提供）
+    Send(sClient, "User: ");
+    Sleep(100);
+    Send(sClient, "over");
     ret = recv(sClient, user, MSGSIZE, 0);
     if (ret >= 16)
         ret = 15;
     user[ret] = '\0';
-    Send(sClient, "Received_User");
+    Send(sClient, "Password: ");
+    Send(sClient, "pw mode");
 
     ret = recv(sClient, password, MSGSIZE, 0);
     if (ret >= 32)
@@ -108,6 +131,7 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
 
     // 发送消息给客户端
     Send(sClient, result.c_str());
+    Send(sClient, "over");
 
     // 接收消息
     ret = recv(sClient, szMessage, MSGSIZE, 0);
@@ -119,7 +143,10 @@ void Server::Receice(SOCKET sClient, SOCKADDR_IN Cli_Info)
         result = manager.command(szMessage);
         // 将返回的内容发送给客户端
         Send(sClient, result.c_str());
-        if (result == "bye.")
+
+        // 暂时的做法，以后重构的时候再详补通信逻辑。
+        Send(sClient, "over");
+        if (result == "bye.\n")
             break;
         // 接收消息
         ret = recv(sClient, szMessage, MSGSIZE, 0);
