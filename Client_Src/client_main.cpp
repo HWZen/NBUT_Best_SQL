@@ -2,14 +2,19 @@
 #include <iostream>
 #include <string>
 #include <stdio.h>
+
 #ifdef I_OS_WIN
+
 #include <conio.h>
+
 #endif
 #ifdef I_OS_LINUX
 #include <string.h>
 #include <termio.h>
 #endif
+
 #include "sock5_client.h"
+
 #pragma clang diagnostic push
 #pragma ide diagnostic ignored "EndlessLoop"
 using namespace std;
@@ -25,10 +30,13 @@ int getch(void);
 
 // 读取处理程序参数
 void ReadOptions(int argc, char *argv[]);
+
 // 帮助信息
 void Help();
+
 // 用户信息
 void userConfig();
+
 // 密码输入模式
 string password_mode();
 
@@ -48,35 +56,36 @@ int main(int argc, char *argv[])
     cout << "connecting to " << cl1.IP_Addr() << ":" << port << " ..." << endl;
     cl1.connect2server();
     cout << "connection sucessful." << endl;
-    
+
 
 
     // 发送用户名
     if (user.length() != 0)
     {
         cout << cl1.receive(NULL) << endl;
-        cl1.sendSTR(user.c_str(),user.length());
+        cl1.sendSTR(user.c_str(), user.length());
     }
 
     // 记录输入模式（普通模式或密码模式） 
     bool typing_mode;
-    while(1)
+    while (1)
     {
-        
+
         // 接收返回结果并输出
         string buf = cl1.receive(&typing_mode);
+        cout << buf;
 
         if (buf == "bye." || buf == "lose connect")
             break;
 
         //从键盘输入指令
-        if(typing_mode)// 判断输入模式
+        if (typing_mode)// 判断输入模式
             strcpy(str, password_mode().c_str());
         else
-            cin.getline(str, MSGSIZE); 
+            cin.getline(str, MSGSIZE);
 
         // 发送指令
-        if(strlen(str) == 0)
+        if (strlen(str) == 0)
         {
             str[0] = ' ';
             str[1] = '\0';
@@ -93,11 +102,11 @@ void ReadOptions(int argc, char *argv[])
     serverAddress = "127.0.0.1";
     user = "";
 
-    for (int i = 0; i < argc;i++)
+    for (int i = 0; i < argc; i++)
     {
         if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--user") == 0)
         {
-            if(i!=argc-1)
+            if (i != argc - 1)
                 user = argv[++i];
             else
             {
@@ -128,14 +137,14 @@ void ReadOptions(int argc, char *argv[])
                 exit(1);
             }
         }
-        else if(strcmp(argv[i],"--help")==0 || strcmp(argv[i],"-h")==0)
+        else if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0)
         {
             Help();
             exit(1);
         }
         else
         {
-            if(i!=0)
+            if (i != 0)
             {
                 cout << "unknow command: " << argv[i] << endl;
                 Help();
@@ -231,9 +240,10 @@ string password_mode()
         }
     }
 #ifdef I_OS_WIN
-    char temp[10];
-    cin.getline(temp, MSGSIZE);
+//    char temp[10];
+//    cin.getline(temp, MSGSIZE);
 #endif
+    cout << endl;
     return re_buf;
 }
 

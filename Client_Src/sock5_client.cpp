@@ -138,7 +138,7 @@ string Client::receive(bool *Is_pw_end)
 
     } while (strcmp(szMessage, "over") && strcmp(szMessage, "pw mode"));
 
-    *Is_pw_end = strcmp(szMessage, "pw mode") ? false : true;
+    *Is_pw_end = !strcmp(szMessage, "pw mode");
 
     return buf;
 }
