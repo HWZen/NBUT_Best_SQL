@@ -16,7 +16,6 @@ using namespace std;
 
 //定义程序中使用的常量
 string user;
-string password;
 int port;
 string serverAddress;
 
@@ -30,14 +29,17 @@ void ReadOptions(int argc, char *argv[]);
 void Help();
 // 用户信息
 void userConfig();
+// 密码输入模式
+string password_mode();
 
 int main(int argc, char *argv[])
 {
     // 读取参数，设置用户名、密码
     ReadOptions(argc, argv);
+
     char str[MSGSIZE];
-    if (user.length() == 0)
-        userConfig();
+    // if (user.length() == 0)
+    //     userConfig();
 
     // 类初始化
     Client cl1(serverAddress.c_str(), port);
@@ -46,36 +48,41 @@ int main(int argc, char *argv[])
     cout << "connecting to " << cl1.IP_Addr() << ":" << port << " ..." << endl;
     cl1.connect2server();
     cout << "connection sucessful." << endl;
-    cout << cl1.receive() << endl;
-
-    // 发送用户名、密码
-    cl1.sendSTR(user.c_str(),user.length());
-    cl1.receive();
-    cl1.sendSTR(password.c_str(), password.length());
-    cout << cl1.receive();
-
-#ifdef I_OS_WIN
-    cin.getline(str, MSGSIZE);
-#endif
+    
 
 
+    // 发送用户名
+    if (user.length() != 0)
+    {
+        cout << cl1.receive(NULL) << endl;
+        cl1.sendSTR(user.c_str(),user.length());
+    }
+
+    // 记录输入模式（普通模式或密码模式） 
+    bool typing_mode;
     while(1)
     {
+        
+        // 接收返回结果并输出
+        string buf = cl1.receive(&typing_mode);
+
+        if (buf == "bye." || buf == "lose connect")
+            break;
+
         //从键盘输入指令
-        cin.getline(str, MSGSIZE); //The function reads characters from stdin and loads them into szMessage
+        if(typing_mode)// 判断输入模式
+            strcpy(str, password_mode().c_str());
+        else
+            cin.getline(str, MSGSIZE); 
 
         // 发送指令
         if(strlen(str) == 0)
-            continue;
+        {
+            str[0] = ' ';
+            str[1] = '\0';
+        }
         cl1.sendSTR(str, strlen(str));
 
-        // 接收返回结果并输出
-        char *t=cl1.receive();
-
-        cout << t;
-
-        if (strcmp(t, "bye.\n") == 0 || strcmp(t, "lose connect")==0)
-            break;
     }
     return 0;
 }
@@ -85,7 +92,6 @@ void ReadOptions(int argc, char *argv[])
     port = DEFAULT_PORT;
     serverAddress = "127.0.0.1";
     user = "";
-    password = "";
 
     for (int i = 0; i < argc;i++)
     {
@@ -107,17 +113,6 @@ void ReadOptions(int argc, char *argv[])
             else
             {
                 cout << "Missing parameters: port" << endl;
-                Help();
-                exit(1);
-            }
-        }
-        else if (strcmp(argv[i], "-pw") == 0 || strcmp(argv[i], "--password") == 0)
-        {
-            if (i != argc - 1)
-                password = argv[++i];
-            else
-            {
-                cout << "Missing parameters: password" << endl;
                 Help();
                 exit(1);
             }
@@ -150,14 +145,61 @@ void ReadOptions(int argc, char *argv[])
     }
 }
 
-void userConfig()
-{
-    cout << "user:";
-    cin >> user;
-    cout << "password:";
+// void userConfig()
+// {
+//     cout << "user:";
+//     cin >> user;
+//     cout << "password:";
+//
+//     char c;
+//     int count = 0;
+//     while ((c = getch()) != '\r')
+//     {
+//
+//         if (c == 8)
+//         { // 退格
+//             if (count == 0)
+//             {
+//                 continue;
+//             }
+// #ifdef I_OS_WIN
+//             putchar('\b'); // 回退一格
+//             putchar(' ');  // 输出一个空格将原来的*隐藏
+//             putchar('\b'); // 再回退一格等待输入
+// #endif
+//             count--;
+//             password.pop_back();
+//         }
+//         if (count == 128 - 1)
+//         { // 最大长度为size-1
+//             continue;
+//         }
+//         if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
+//         {                 // 密码只可包含数字和字母
+// #ifdef I_OS_WIN
+//             putchar('*'); // 接收到一个字符后, 打印一个*
+// #endif
+//             password += c;
+//             count++;
+//         }
+//     }
+//     password[count] = '\0';
+//     cout<<endl;
+// }
 
+void Help()
+{
+    cout << "commant:" << endl;
+    cout << "-u --uesr: user" << endl
+         << "-p --port: port" << endl
+         << "-a --address: address" << endl;
+}
+
+string password_mode()
+{
     char c;
     int count = 0;
+    string re_buf;
     while ((c = getch()) != '\r')
     {
 
@@ -173,32 +215,26 @@ void userConfig()
             putchar('\b'); // 再回退一格等待输入
 #endif
             count--;
-            password.pop_back();
+            re_buf.pop_back();
         }
         if (count == 128 - 1)
         { // 最大长度为size-1
             continue;
         }
         if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9'))
-        {                 // 密码只可包含数字和字母
+        { // 密码只可包含数字和字母
 #ifdef I_OS_WIN
             putchar('*'); // 接收到一个字符后, 打印一个*
 #endif
-            password += c;
+            re_buf += c;
             count++;
         }
     }
-    password[count] = '\0';
-    cout<<endl;
-}
-
-void Help()
-{
-    cout << "commant:" << endl;
-    cout << "-u --uesr: user" << endl
-         << "-p --port: port" << endl
-         << "-pw --password: password" << endl
-         << "-a --address: address" << endl;
+#ifdef I_OS_WIN
+    char temp[10];
+    cin.getline(temp, MSGSIZE);
+#endif
+    return re_buf;
 }
 
 #ifdef I_OS_LINUX

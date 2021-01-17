@@ -119,19 +119,28 @@ void Client::sendSTR(const char str[],int len)
         send(sClient, str, len, 0);
 }
 
-char *Client::receive()
+string Client::receive(bool *Is_pw_end)
 {
     int ret;
-    ret = recv(sClient, szMessage, MSGSIZE, 0);
-    if(ret==-1)
+    string buf;
+    do
     {
-        strncpy(szMessage, "lose connect", 13);
-        ret = 13;
-    }
-    szMessage[ret] = '\0';
-    //RecVector.push_back(szMessage);
-    return szMessage;
+        ret = recv(sClient, szMessage, MSGSIZE, 0);
+        if(ret==-1)
+        {
+            strncpy(szMessage, "lose connect", 13);
+            ret = 13;
+        }
+        szMessage[ret] = '\0';
 
+        if (strcmp(szMessage, "over") && strcmp(szMessage, "pw mode"))
+            buf += szMessage;
+
+    } while (strcmp(szMessage, "over") && strcmp(szMessage, "pw mode"));
+
+    *Is_pw_end = strcmp(szMessage, "pw mode") ? false : true;
+
+    return buf;
 }
 
 string Client::IP_Addr()

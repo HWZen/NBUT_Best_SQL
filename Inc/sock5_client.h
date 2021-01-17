@@ -20,6 +20,7 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/shm.h>
+
 typedef int SOCKET;
 typedef struct sockaddr_in SOCKADDR_IN;
 #define closesocket(x) close(x)
@@ -36,6 +37,7 @@ using namespace std;
 #define SERVER_ADDRESS "127.0.0.1" //服务器端IP地址
 #define DEFAULT_PORT 6800          //服务器的端口号
 #define MSGSIZE 1024               //收发缓冲区的大小
+
 
 class Client
 {
@@ -60,16 +62,20 @@ private:
     /* data */
 public:
     Client(const char server_address[] = SERVER_ADDRESS, int port = DEFAULT_PORT, int msgsize = MSGSIZE);
+
     ~Client();
 
     // 服务器IP地址
     string IP_Addr();
+
     // 连接至服务器
     void connect2server();
+
     // 发送字符串
     void sendSTR(const char str[], int len);
+
     // 接收消息（阻塞式）
-    char *receive();
+    string receive(bool *Is_pw_end = NULL);
 };
 
 #pragma clang diagnostic pop
