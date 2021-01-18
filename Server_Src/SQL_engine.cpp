@@ -1,6 +1,5 @@
 #include "SQL_engine.h"
 #include "osplatformutil.h"
-#include "function.h"
 #include <cstring>
 #include <iostream>
 
@@ -13,7 +12,6 @@ const char Slash = '\\';
 
 #ifdef I_OS_LINUX
 
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
 
@@ -30,7 +28,7 @@ Engine::Engine(const char *use_name, string &re_buf)
     path = PATH;
 
     // 打开表
-    space_fptr = fopen("SQL.space", "rb");
+    space_fptr = fopen((path + "SQL.space").c_str(), "rb");
     if (space_fptr == NULL)
     {
         //error: load SQL.space fail
@@ -85,9 +83,9 @@ string Engine::use(const char *name)
     Abs_Path += name;
 
     // 打开数据库配置文件
-    FILE *DB_fp = fopen(string(Abs_Path + Slash + "DB.space").c_str(), "rb");
+    FILE *DB_fp = fopen((Abs_Path + Slash + "DB.space").c_str(), "rb");
     if (DB_fp == NULL)
-        return NO_DB_SPECIFIED;
+        return NO_DB_SPACE_FILE;
 
     DB_name = name;
 
@@ -120,7 +118,7 @@ string Engine::InitSpace()
     if (space_fptr != NULL)
         fclose(space_fptr);
 
-    space_fptr = fopen("SQL.space", "wb+");
+    space_fptr = fopen((path + "SQL.space").c_str(), "wb+");
     if (space_fptr == NULL)
     {
         re_buf += FILE_CREATE_FAIL;
@@ -192,7 +190,7 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
     // 创建完毕
 
     // 更新工作区配置文件
-    space_fptr = fopen("SQL.space", "rb+");
+    space_fptr = fopen((path + "SQL.space").c_str(), "rb+");
     if (space_fptr == NULL)
     {
         re_buf += NO_SPACE_FILE;
@@ -212,7 +210,7 @@ string Engine::CreatTable(const char *name, int Col_Num, const char **Col, const
 
     // 检测数据库
     if (DB_name[0] == 0)
-        return NO_DB_SPECIFIED;
+        return NO_DB_SPACE_FILE;
 
     // 检测表是否存在
     if (findTab(name))
@@ -231,9 +229,9 @@ string Engine::CreatTable(const char *name, int Col_Num, const char **Col, const
         return FILE_CREATE_FAIL;
 
     // 打开数据库配置文件头
-    FILE *DB_fp = fopen((DB_name + Slash + "DB.space").c_str(), "rb+");
+    FILE *DB_fp = fopen((path + DB_name + Slash + "DB.space").c_str(), "rb+");
     if (DB_fp == NULL)
-        return NO_DB_SPECIFIED;
+        return NO_DB_SPACE_FILE;
 
     // 开始创建表
     fwrite(Abs_Path.c_str(), sizeof(char[PATH_SIZE]), 1, Tab_fptr);
@@ -285,7 +283,7 @@ string Engine::insertRol(const char *Tab_name, const void *argv)
     string re_buf;
     // 检测数据库
     if (DB_name[0] == 0)
-        return NO_DB_SPECIFIED;
+        return NO_DB_SPACE_FILE;
 
     // 检测表是否存在
     if (!findTab(Tab_name))
@@ -400,7 +398,7 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
         has_void = true;
 
     int Col_Addr = -1;
-    if(Col_name[0]!='*')
+    if (Col_name[0] != '*')
     {
 
         for (int i = 0; i < Tab_headler.Col_num; i++)
@@ -445,28 +443,29 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
         int data_page = 0;
         for (int i = 0; i < Tab_headler.Rol_num; i++)
         {
-            fread((char *)buf + data_page * Tab_headler.page_size, Tab_headler.page_size, 1, Tab_fp);
+            fread((char *) buf + data_page * Tab_headler.page_size, Tab_headler.page_size, 1, Tab_fp);
             switch (Tab_headler.Col_type[Col_Addr])
             {
                 case SQL::Int:
-                    if (*(int *)((char *)buf + data_page * Tab_headler.page_size + data_ptr) == *(int *)target)
+                    if (*(int *) ((char *) buf + data_page * Tab_headler.page_size + data_ptr) == *(int *) target)
                         data_page++;
                     break;
                 case SQL::CHAR:
                 case SQL::LONG_CHAR:
-                    if (!strcmp((char *)((char *)buf + data_page * Tab_headler.page_size + data_ptr), (char *)target))
+                    if (!strcmp((char *) ((char *) buf + data_page * Tab_headler.page_size + data_ptr),
+                                (char *) target))
                         data_page++;
                     break;
                 case SQL::FLOAT:
-                    if (*(double *)((char *)buf + data_page * Tab_headler.page_size + data_ptr) == *(double *)target)
+                    if (*(double *) ((char *) buf + data_page * Tab_headler.page_size + data_ptr) == *(double *) target)
                         data_page++;
-                        break;
+                    break;
                 default:
                     break;
             }
         }
         fclose(Tab_fp);
-        if(data_page==0)
+        if (data_page == 0)
         {
             buf = NULL;
             return NO_TARGET;
@@ -474,8 +473,8 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
         else
             return to_string(data_page);
     }
-    
-    if(!has_void)
+
+    if (!has_void)
         fread(buf, Tab_headler.page_size, Tab_headler.Rol_num, Tab_fp);
     else
     {

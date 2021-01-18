@@ -37,7 +37,7 @@ extern char *PATH;
 #define NO_DB_NAME "e 1 "
 #define FILE_CREATE_FAIL "e 2 "
 #define FILE_OPEN_FAIL "e 3"
-#define NO_DB_SPECIFIED "e 4"
+#define NO_DB_SPACE_FILE "e 4"
 #define NO_TARGET "e 5"
 #define TARGET_EXIST "e 6"
 
