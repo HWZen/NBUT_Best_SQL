@@ -84,7 +84,7 @@ void String2argv_argc(char *str, int &argc, char **argv);
 using std::string;
 
 /* Define of btye.*/
-typedef unsigned char byte;
+typedef unsigned char Byte;
 /* Define of byte. */
 typedef unsigned int bit32;
 
@@ -94,7 +94,7 @@ public:
   MD5(const string& message);
 
   /* Generate md5 digest. */
-  const byte* getDigest();
+  const Byte* getDigest();
 
   /* Convert digest to string value */
   string toStr();
@@ -102,16 +102,16 @@ public:
 private:
   /* Initialization the md5 object, processing another message block,
    * and updating the context.*/
-  void init(const byte* input, size_t len);
+  void init(const Byte* input, size_t len);
 
   /* MD5 basic transformation. Transforms state based on block. */
-  void transform(const byte block[64]);
+  void transform(const Byte block[64]);
 
   /* Encodes input (usigned long) into output (byte). */
-  void encode(const bit32* input, byte* output, size_t length);
+  void encode(const bit32* input, Byte* output, size_t length);
 
   /* Decodes input (byte) into output (usigned long). */
-  void decode(const byte* input, bit32* output, size_t length);
+  void decode(const Byte* input, bit32* output, size_t length);
 
 private:
   /* Flag for mark whether calculate finished. */
@@ -124,13 +124,13 @@ private:
   bit32 count[2];
 
   /* memcpy. */
-  byte buffer[64];
+  Byte buffer[64];
 
   /* message digest. */
-  byte digest[16];
+  Byte digest[16];
 
 	/* padding for calculate. */
-  static const byte PADDING[64];
+  static const Byte PADDING[64];
 
   /* Hex numbers. */
   static const char HEX_NUMBERS[16];

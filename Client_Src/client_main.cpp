@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <stdio.h>
+#include "function.h"
 
 #ifdef I_OS_WIN
 
@@ -244,7 +245,7 @@ string password_mode()
 //    cin.getline(temp, MSGSIZE);
 #endif
     cout << endl;
-    return re_buf;
+    return MD5(re_buf).toStr();
 }
 
 #ifdef I_OS_LINUX
