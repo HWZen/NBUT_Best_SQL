@@ -1,3 +1,5 @@
+#ifndef SOCK5_CLIENT
+#define SOCK5_CLIENT
 #include <stdio.h>
 #include <iostream>
 #include "osplatformutil.h"
@@ -79,3 +81,5 @@ public:
 };
 
 #pragma clang diagnostic pop
+
+#endif
