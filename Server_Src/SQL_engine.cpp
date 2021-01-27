@@ -62,10 +62,10 @@ Engine::Engine(const char *use_name, string &re_buf)
 
 string Engine::use(const char *name)
 {
-    string re_buf = "";
+    string re_buf;
 
     // 检查数据库是否存在
-    if (space_Header.PATH[0] = 0)
+    if (space_Header.PATH[0] == 0)
     {
         re_buf += NO_SPACE_FILE;
         return re_buf;
@@ -113,7 +113,7 @@ string Engine::InitSpace()
 {
     // 初始化工作区
     // 慎用：不会检测工作区是否已存在
-    string re_buf = "";
+    string re_buf;
 
     if (space_fptr != NULL)
         fclose(space_fptr);
@@ -126,7 +126,7 @@ string Engine::InitSpace()
     }
 
     fwrite(PATH, sizeof(char[PATH_SIZE]), 1, space_fptr);
-    fwrite((const char *) ENGINE_VERSION, sizeof((const char *) ENGINE_VERSION), 1, space_fptr);
+    fwrite((const char *) ENGINE_VERSION, sizeof(ENGINE_VERSION), 1, space_fptr);
 
     memcpy(space_Header.PATH, PATH, sizeof(char[PATH_SIZE]));
     space_Header.DB_Num = 0;
@@ -139,7 +139,7 @@ string Engine::InitSpace()
 
 string Engine::CreatDB(const char *name, const char *group, const char *owner)
 {
-    string re_buf = "";
+    string re_buf;
 
     // 数据库绝对路径
     string Abs_Path = path;
@@ -180,12 +180,13 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
     fwrite(Abs_Path.c_str(), sizeof(char[PATH_SIZE]), 1, DB_fp);
     fwrite(ENGINE_VERSION, sizeof(char[VERSION_SIZE]), 1, DB_fp);
 
-    memcpy(DB_Header.PATH, Abs_Path.c_str(), sizeof(char[PATH_SIZE]));
-    memcpy(DB_Header.Group, group, sizeof(char[CHAR_SIZE]));
-    memcpy(DB_Header.Owner, owner, sizeof(char[CHAR_SIZE]));
-    DB_Header.Index_Num = 0;
-    DB_Header.Table_Num = 0;
-    fwrite(&DB_Header, sizeof(DB_SPACE), 1, DB_fp);
+    DB_SPACE new_header;
+    memcpy(new_header.PATH, Abs_Path.c_str(), sizeof(char[PATH_SIZE]));
+    memcpy(new_header.Group, group, sizeof(char[CHAR_SIZE]));
+    memcpy(new_header.Owner, owner, sizeof(char[CHAR_SIZE]));
+    new_header.Index_Num = 0;
+    new_header.Table_Num = 0;
+    fwrite(&new_header, sizeof(DB_SPACE), 1, DB_fp);
     fclose(DB_fp);
     // 创建完毕
 
@@ -206,7 +207,7 @@ string Engine::CreatDB(const char *name, const char *group, const char *owner)
 
 string Engine::CreatTable(const char *name, int Col_Num, const char **Col, const SQL::DataType_Enum *Col_type)
 {
-    string re_buf = "";
+    string re_buf;
 
     // 检测数据库
     if (DB_name[0] == 0)
@@ -259,6 +260,9 @@ string Engine::CreatTable(const char *name, int Col_Num, const char **Col, const
                 break;
             case SQL::FLOAT:
                 Header.page_size += sizeof(double);
+            case SQL::BOOL:
+                Header.page_size += sizeof(bool);
+                break;
             default:
                 break;
         }
@@ -330,7 +334,7 @@ string Engine::insertRol(const char *Tab_name, const void *argv)
 
     if (DB_Header.Index[0] && 0)
     {
-        /*
+        /*TODO:
             如果有索引
         */
     }
@@ -386,7 +390,7 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
 {
     Tab_SPACE Tab_headler;
     string re_buf = Get_Tab_Header(Tab_name, Tab_headler);
-    if (re_buf.find("e") != re_buf.npos)
+    if (re_buf.find('e') != string::npos)
         return re_buf;
 
     FILE *Tab_fp = fopen((path + Slash + DB_name + Slash + Tab_name).c_str(), "rb");
@@ -428,6 +432,9 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
                     break;
                 case SQL::FLOAT:
                     data_ptr += sizeof(double);
+                case SQL::BOOL:
+                    data_ptr += sizeof(bool);
+                    break;
                 default:
                     break;
             }
@@ -435,7 +442,7 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
 
         if (DB_Header.Index[0])
         {
-            /*
+            /*TODO:
             使用索引查找
             */
         }
@@ -460,6 +467,10 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
                     if (*(double *) ((char *) buf + data_page * Tab_headler.page_size + data_ptr) == *(double *) target)
                         data_page++;
                     break;
+                case SQL::BOOL:
+                    if (*(bool *) ((char *) buf + data_page * Tab_headler.page_size + data_ptr) == *(bool *) target)
+                        data_page++;
+                    break;
                 default:
                     break;
             }
@@ -478,7 +489,7 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
         fread(buf, Tab_headler.page_size, Tab_headler.Rol_num, Tab_fp);
     else
     {
-        /*
+        /*TODO:
             有间隙情况
         */
     }

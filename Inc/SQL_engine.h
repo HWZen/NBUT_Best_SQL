@@ -78,10 +78,8 @@ namespace SQL
     // 管理层模式枚举
     enum Mode
     {
-        NoLogin,
         Normal,
         Init,
-        Create
     };
 } // namespace SQL
 

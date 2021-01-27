@@ -6,6 +6,7 @@
 #include <thread>
 #include <vector>
 #include <string>
+#include "socketor.h"
 using namespace std;
 
 #define DEFAULT_PORT 5150
@@ -61,11 +62,10 @@ public:
     // 受理连接并开多线程接收函数
     [[noreturn]] void Accept();
 
-    // 接收函数，并连接管理系统
-    void Receice(SOCKET sClient, SOCKADDR_IN Cli_Info);
+    // 连接管理系统
+    void New_Connect(socketor sClient);
 
-    // 发送函数
-    void Send(SOCKET &sClient, const char *str);
+
 };
 
 #endif
