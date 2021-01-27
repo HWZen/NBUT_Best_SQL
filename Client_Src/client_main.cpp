@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
         string buf = cl1.receive(&typing_mode);
         cout << buf;
 
-        if (buf == "bye." || buf == "lose connect")
+        if (buf == "bye.\n" || buf == "lose connect")
             break;
 
         //´Ó¼üÅÌÊäÈëÖ¸Áî

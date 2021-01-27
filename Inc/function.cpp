@@ -61,7 +61,7 @@ vector<string> String2argv_argc(const string& str)
             if (!temp.empty())
             {
                 res.emplace_back(temp);
-                ch = ' ';
+                sign = ' ';
                 temp.clear();
             }
         }
