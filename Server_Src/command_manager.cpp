@@ -92,7 +92,7 @@ Manager::Manager(socketor socket)
         socket.Send("pw mode");
         psword = socket.receive();
         void *databuf;
-        databuf = new char[4 * 3 + CHAR_SIZE * 6];
+        databuf = new char[4 * 3 + CHAR_SIZE * 3 + LONG_CHAR_SIZE * 3];
         rec_buf = eng->serach("user", "name", user.c_str(), databuf);
         if (rec_buf.find('e') != string::npos)
         {
@@ -198,7 +198,7 @@ string Manager::InitSpace(int parameterNum, vector<string> parmeter)
     {
         client.Send("bye.");
         client.close_connect();
-        return "";
+        return "lose connect";
     }
 
     if (parameterNum == 1 && (parmeter[0] == "Y" || parmeter[0] == "y"))
@@ -207,12 +207,12 @@ string Manager::InitSpace(int parameterNum, vector<string> parmeter)
         client.Send("over");
         user = client.receive();
         if (user == "lose connect")
-            return "";
+            return "lose connect";
         client.Send("Please enter root user password:");
         client.Send("pw mode");
         psword = client.receive();
         if (psword == "lose connect")
-            return "";
+            return "lose connect";
     }
 
 
@@ -250,7 +250,7 @@ string Manager::InitSpace(int parameterNum, vector<string> parmeter)
 
 
     char Col[3][CHAR_SIZE] = {"id", "name", "Password"};
-    SQL::DataType_Enum type_list[3] = {SQL::Int, SQL::CHAR, SQL::CHAR};
+    SQL::DataType_Enum type_list[3] = {SQL::Int, SQL::CHAR, SQL::LONG_CHAR};
     rec = eng->CreatTable("user", 3, (const char **) Col, type_list);
     if (rec.length() != 0)
         if (rec.find('e') != string::npos)
@@ -262,10 +262,10 @@ string Manager::InitSpace(int parameterNum, vector<string> parmeter)
         }
 
     void *buf;
-    buf = new char[4 + CHAR_SIZE * 2];
+    buf = new char[4 + CHAR_SIZE + LONG_CHAR_SIZE];
     *(int *) buf = 0;
     memcpy((char *) buf + 4, user.c_str(), CHAR_SIZE);
-    memcpy((char *) buf + 4 + CHAR_SIZE, psword.c_str(), CHAR_SIZE);
+    memcpy((char *) buf + 4 + CHAR_SIZE, psword.c_str(), LONG_CHAR_SIZE);
     rec = eng->insertRol("user", (const void *) buf);
     if (rec.length() != 0)
         if (rec.find('e') != string::npos)
