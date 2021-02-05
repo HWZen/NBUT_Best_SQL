@@ -260,6 +260,7 @@ string Engine::CreatTable(const char *name, int Col_Num, const char **Col, const
                 break;
             case SQL::FLOAT:
                 Header.page_size += sizeof(double);
+                break;
             case SQL::BOOL:
                 Header.page_size += sizeof(bool);
                 break;
@@ -432,6 +433,7 @@ string Engine::serach(const char *Tab_name, const char *Col_name, const void *ta
                     break;
                 case SQL::FLOAT:
                     data_ptr += sizeof(double);
+                    break;
                 case SQL::BOOL:
                     data_ptr += sizeof(bool);
                     break;
