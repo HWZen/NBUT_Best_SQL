@@ -1,5 +1,5 @@
 # NBUT_Best_SQL
- 从零开始的SQL——数据结构大作业项目
+ 从零开始的SQL
 
 
 
