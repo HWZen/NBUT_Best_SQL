@@ -1,8 +1,8 @@
 #pragma once
 #ifndef _SQL_ENGINE
 #define _SQL_ENGINE
-#include <stdlib.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstdio>
 #include <string>
 using namespace std;
 
@@ -108,10 +108,10 @@ struct DB_SPACE
 struct Tab_SPACE
 {
     char PATH[PATH_SIZE] = {0};
-    int Col_num;
-    char Col[MAX_COL][CHAR_SIZE];
-    SQL::DataType_Enum Col_type[MAX_COL];
-    int page_size;
+    int Col_num{};
+    char Col[MAX_COL][CHAR_SIZE]{};
+    SQL::DataType_Enum Col_type[MAX_COL]{};
+    int page_size{};
     int Rol_num = 0;
     long Rol_void_buf[MAX_VOID_BUF] = {0};
 };
